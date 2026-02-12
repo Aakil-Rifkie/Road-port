@@ -5,7 +5,7 @@ import { pool } from "../config/db";
 import { generateToken } from "../utils/generateToken";
 import { DbUser, PublicUser } from "../types/user";
 
-
+/*
  * REGISTER
  * POST /api/users
  */
