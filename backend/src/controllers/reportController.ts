@@ -5,13 +5,16 @@ import { CreateReportBody } from "../types/report";
 
 export const createReport = asyncHandler(
   async (req: Request, res: Response) => {
-    const { title, description, type, latitude, longitude, images } =
+    const { title, description, type, latitude, longitude,} =
       req.body as CreateReportBody;
 
     if (!title || !type || latitude == null || longitude == null) {
       res.status(400);
       throw new Error("Missing required fields");
     }
+
+    const files = req.files as Express.Multer.File[];
+    const imageNames = files ? files.map(file => file.filename) : [];
 
     const client = await pool.connect();
     try {
@@ -25,18 +28,15 @@ export const createReport = asyncHandler(
       );
 
       const newReport = reportResult.rows[0];
-      if (images && images.length > 0) {
-        for (const url of images) {
+      for (const name of imageNames){
           await client.query(
-            `INSERT INTO attachments (report_id, url) 
-                    VALUES ($1, $2)`,
-            [newReport.id, url],
-          );
+            `INSERT into attachments (report_id, url) VALUES ($1, $2)`,
+            [newReport.id, name]
+          )
         }
-      }
 
       await client.query("COMMIT");
-      res.status(201).json({ ...newReport, images: images || [] });
+      res.status(201).json({ ...newReport, images: imageNames || [] });
     } catch (error) {
       await client.query("ROLLBACK");
       throw error;
