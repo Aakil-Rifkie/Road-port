@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import asyncHandler from "express-async-handler";
-import { pool } from "../config/db";
-import { generateToken } from "../utils/generateToken";
-import { DbUser, PublicUser } from "../types/user";
+import { pool } from "../config/db.js";
+import { generateToken } from "../utils/generateToken.js";
+import { DbUser, PublicUser } from "../types/user.js";
 
 /*
  * REGISTER

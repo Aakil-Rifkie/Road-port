@@ -1,15 +1,24 @@
 import multer from 'multer'
+import path from 'path'
+import { fileURLToPath } from 'url';
 
-export const image = multer.diskStorage({
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+
+export const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "./images");
+    cb(null, path.join(__dirname, "../../images"));
   },
 
   filename: (req, file, cb) => {
-    cb(null, Date.now() + "--" + file.originalname)
+    const cleanFileName = file.originalname.replace(/\s+/g, "_");
+    cb (null, Date.now() + "--" + cleanFileName)
   }
 });
 
-const upload = multer({storage: image});
-
+export const upload = multer({ 
+    storage: storage,
+    limits: { fileSize: 1024 * 1024 * 5 } 
+});
 
