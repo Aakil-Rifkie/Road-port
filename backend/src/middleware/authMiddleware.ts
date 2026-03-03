@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import asyncHandler from "express-async-handler";
-import { pool } from "../config/db";
-import { PublicUser } from "../types/user";
+import { pool } from "../config/db.js";
+import { PublicUser } from "../types/user.js";
 
 interface JwtPayload {
   userId: string;

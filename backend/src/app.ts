@@ -5,6 +5,7 @@ import userRoutes from "./routes/userRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js"
 import { fileURLToPath } from 'url';;
 import path from 'path';
+import { errorHandler } from "./middleware/errorMiddleware.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,6 +25,8 @@ app.use("/uploads", express.static(path.join(__dirname, "../../images")));
 
 app.use("/api/users", userRoutes);
 app.use("/api/reports", reportRoutes);
+
+app.use(errorHandler)
 
 app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok" });
