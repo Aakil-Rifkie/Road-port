@@ -92,7 +92,7 @@ export default function MapSearch() {
   return (
     <div
       ref={wrapperRef}
-      className="absolute top-3 left-14 right-3 md:left-1/2 md:right-auto md:-translate-x-1/2 z-[1000] max-w-sm"
+      className="absolute top-3 left-14 right-14 md:left-1/2 md:right-auto md:-translate-x-1/2 z-[1000] max-w-sm"
     >
       <div className="relative group">
         <div className="flex items-center bg-white rounded-xl md:rounded-2xl shadow-lg border border-gray-100 px-3 py-2 md:py-2.5 gap-2 transition-all focus-within:ring-2 focus-within:ring-yellow-400/50">

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import { pool } from "../config/db.js";
 import { CreateReportBody } from "../types/report.js";
+import { uploadToCloudinary } from "../middleware/fileUploadMiddleware.js";
 
 /* Register, POST /api/reports */
 export const createReport = asyncHandler(
@@ -24,7 +25,9 @@ export const createReport = asyncHandler(
     }
 
     const files = req.files as Express.Multer.File[];
-    const imageNames = files ? files.map((file) => file.filename) : [];
+    const imageUrls = files?.length
+      ? await Promise.all(files.map((f) => uploadToCloudinary(f)))
+      : [];
 
     const client = await pool.connect();
     try {
@@ -38,15 +41,16 @@ export const createReport = asyncHandler(
       );
 
       const newReport = reportResult.rows[0];
-      for (const name of imageNames) {
+
+      for (const url of imageUrls) {
         await client.query(
-          `INSERT into attachments (report_id, url) VALUES ($1, $2)`,
-          [newReport.id, name],
+          `INSERT INTO attachments (report_id, url) VALUES ($1, $2)`,
+          [newReport.id, url],
         );
       }
 
       await client.query("COMMIT");
-      res.status(201).json({ ...newReport, images: imageNames || [] });
+      res.status(201).json({ ...newReport, images: imageUrls });
     } catch (error) {
       await client.query("ROLLBACK");
       throw error;

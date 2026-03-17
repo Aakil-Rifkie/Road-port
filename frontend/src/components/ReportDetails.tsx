@@ -50,12 +50,12 @@ export default function ReportDetails({ report, onClose, onResolved }: Props) {
         {report.images?.[0] ? (
           <>
             <img
-              src={`http://localhost:3000/uploads/${report.images[0]}`}
+              src={report.images[0]}
               className="absolute inset-0 w-full h-full object-cover blur-xl opacity-30 scale-110"
               alt="Background Blur"
             />
             <img
-              src={`http://localhost:3000/uploads/${report.images[0]}`}
+              src={report.images[0]}
               className="relative w-full h-full object-contain"
               alt="Report Detail"
             />
@@ -134,7 +134,7 @@ export default function ReportDetails({ report, onClose, onResolved }: Props) {
                 : "bg-yellow-400 hover:bg-black hover:text-white text-black shadow-lg shadow-yellow-100"
               }`}
           >
-            {loading ? "Syncing..." : hasVoted ? "Already Voted" : "Confirm Issue"}
+            {loading ? "Syncing..." : hasVoted ? "Already Voted" : "Vote Issue as solved"}
           </button>
         </div>
       </div>
