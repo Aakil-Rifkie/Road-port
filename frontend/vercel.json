@@ -1,0 +1,10 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://road-port-production.up.railway.app/api/:path*"
+    }
+  ]
+}
+
+
