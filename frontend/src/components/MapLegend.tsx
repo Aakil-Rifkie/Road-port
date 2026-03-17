@@ -10,7 +10,7 @@ const labels: Record<string, string> = {
 
 export default function MapLegend() {
   return (
-    <div className="absolute bottom-6 left-4 z-[1000] bg-white rounded-2xl shadow-lg px-4 py-3 font-mono">
+    <div className="absolute bottom-6 left-4 z-[1000] bg-white rounded-2xl shadow-lg px-4 py-3 font-mono hidden md:block">
       <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2.5">
         Report Type
       </p>

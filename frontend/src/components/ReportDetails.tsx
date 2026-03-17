@@ -16,22 +16,32 @@ export default function ReportDetails({ report, onClose, onResolved }: Props) {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    setError(""); setVotes(null); setHasVoted(false); setLoading(false);
+    setError("");
+    setVotes(null);
+    setHasVoted(false);
+    setLoading(false);
   }, [report.id]);
 
   const accentColor = reportTypeColors[report.type] ?? "#000000";
 
   const handleResolve = async () => {
     setLoading(true);
+    setError("");
     try {
       const { data } = await API.patch(`/reports/${report.id}/resolve`, {}, { withCredentials: true });
       setVotes(data.currentVotes);
       setHasVoted(true);
       if (data.isResolved) { onResolved(); onClose(); }
     } catch (err: any) {
-      setHasVoted(true);
-      setError("Vote could not be processed.");
-    } finally { setLoading(false); }
+      const msg = err.response?.data?.message ?? "";
+      if (msg.toLowerCase().includes("already")) {
+        setHasVoted(true);
+      } else {
+        setError("Something went wrong. Try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -65,8 +75,10 @@ export default function ReportDetails({ report, onClose, onResolved }: Props) {
 
       <div className="p-6 md:p-8 flex flex-col flex-1 min-h-0 overflow-hidden">
         <div className="overflow-y-auto pr-2 flex-1 scrollbar-thin scrollbar-thumb-gray-200">
-          <div className="inline-block px-2 py-1 mb-4 text-[10px] font-black uppercase tracking-widest border-2" 
-               style={{ borderColor: accentColor, color: accentColor }}>
+          <div
+            className="inline-block px-2 py-1 mb-4 text-[10px] font-black uppercase tracking-widest border-2"
+            style={{ borderColor: accentColor, color: accentColor }}
+          >
             {report.type}
           </div>
 
@@ -87,24 +99,43 @@ export default function ReportDetails({ report, onClose, onResolved }: Props) {
 
         <div className="mt-6 pt-6 border-t border-gray-100 bg-white">
           {votes !== null && (
-            <div className="mb-4 bg-gray-100 h-1.5 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-black transition-all duration-700 ease-out" 
-                style={{ width: `${(votes / 5) * 100}%` }}
-              />
-            </div>
+            <>
+              <div className="flex justify-between text-[10px] font-bold uppercase text-gray-400 mb-2">
+                <span>Resolution votes</span>
+                <span>{votes} / 5</span>
+              </div>
+              <div className="mb-4 bg-gray-100 h-1.5 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-black transition-all duration-700 ease-out"
+                  style={{ width: `${(votes / 5) * 100}%` }}
+                />
+              </div>
+            </>
           )}
-          
+
+          {hasVoted && (
+            <p className="text-[10px] text-gray-400 text-center font-bold uppercase tracking-widest mb-3">
+              ✓ Your vote has been recorded
+            </p>
+          )}
+
+          {error && (
+            <p className="text-[10px] text-red-500 text-center font-bold uppercase tracking-widest mb-3">
+              {error}
+            </p>
+          )}
+
           <button
             onClick={handleResolve}
             disabled={hasVoted || loading}
             className={`w-full py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all
-              ${hasVoted ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-yellow-400 hover:bg-black hover:text-white text-black shadow-lg shadow-yellow-100"}`}
+              ${hasVoted
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : "bg-yellow-400 hover:bg-black hover:text-white text-black shadow-lg shadow-yellow-100"
+              }`}
           >
-            {loading ? "Syncing..." : hasVoted ? "✓ Verified" : "Confirm Issue"}
+            {loading ? "Syncing..." : hasVoted ? "Already Voted" : "Confirm Issue"}
           </button>
-          
-          {error && <p className="text-[10px] text-red-500 mt-3 text-center font-bold uppercase">{error}</p>}
         </div>
       </div>
     </div>

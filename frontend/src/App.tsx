@@ -24,7 +24,7 @@ export default function App() {
           path="/dashboard"
           element={
             <ProtectedRoute user={user}>
-              <Dashboard />
+              <Dashboard onLogout={() => setUser(null)} />
             </ProtectedRoute>
           }
         />
@@ -32,7 +32,9 @@ export default function App() {
           path="/admin"
           element={
             <ProtectedRoute user={user}>
-              {user?.role === "admin" ? <AdminDashboard /> : <Navigate to="/dashboard" replace />}
+              {user?.role === "admin"
+                ? <AdminDashboard onLogout={() => setUser(null)} />
+                : <Navigate to="/dashboard" replace />}
             </ProtectedRoute>
           }
         />
