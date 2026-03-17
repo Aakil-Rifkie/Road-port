@@ -47,7 +47,7 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
     .cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     })
     .json(user);
@@ -87,7 +87,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
     .cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     })
     .json({
@@ -103,6 +103,7 @@ export const logoutUser = asyncHandler(async (_req, res) => {
   res
     .cookie("token", "", {
       httpOnly: true,
+      sameSite: "none",
       expires: new Date(0),
     })
     .json({ message: "Logged out" });
