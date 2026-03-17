@@ -1,9 +1,14 @@
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import MarkerClusterGroup from "react-leaflet-cluster";
 import "leaflet/dist/leaflet.css";
 import { useState, useEffect, useRef } from "react";
 import API from "../api/axios";
 import type { CreateReportContent } from "../types/report";
 import ReportDetails from "../components/ReportDetails";
+import MapLegend from "../components/MapLegend";
+import { getMarkerIcon, getActiveMarkerIcon } from "../utils/markerUtils";
+import HeatmapLayer from "../components/HeatmapLayer";
+import MapSearch from "../components/MapSearch";
 
 function ClickHandler({
   setCoord,
@@ -22,15 +27,20 @@ const reportTypes = ["pothole", "crack", "noise", "smell", "flooding"];
 
 export default function Dashboard() {
   const colomboCenter: [number, number] = [6.9339, 79.85];
-  const [reportLocation, setReportLocation] = useState<[number, number] | null>(null);
+  const [reportLocation, setReportLocation] = useState<[number, number] | null>(
+    null,
+  );
   const [reportType, setReportType] = useState("pothole");
   const [allReports, setAllReports] = useState<CreateReportContent[]>([]);
-  const [selectedReport, setSelectedReport] = useState<CreateReportContent | null>(null);
+  const [selectedReport, setSelectedReport] =
+    useState<CreateReportContent | null>(null);
 
   const [visible, setVisible] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [photo, setPhoto] = useState<File | null>(null);
+
+  const [heatmap, setHeatmap] = useState(false);
 
   const isFirst = useRef(true);
 
@@ -100,37 +110,87 @@ export default function Dashboard() {
 
   return (
     <div className="h-screen w-full relative flex overflow-hidden font-mono">
-      
-      {/* ── Map ── */}
       <div className="flex-1 z-0">
-        <MapContainer center={colomboCenter} zoom={14} className="h-full w-full">
+        <MapContainer
+          center={colomboCenter}
+          zoom={14}
+          minZoom={12}
+          maxZoom={18}
+          maxBounds={[
+            [6.7, 79.7],
+            [7.1, 80.1],
+          ]}
+          maxBoundsViscosity={1.0}
+          className="h-full w-full"
+        >
+          <MapSearch />
+           
           <TileLayer
             url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
           />
           <ClickHandler setCoord={setReportLocation} />
 
-          {allReports.map((report) => (
-            <Marker
-              key={report.id}
-              position={[report.latitude, report.longitude]}
-              eventHandlers={{
-                click: () => {
-                  handleClose();
-                  setSelectedReport(report);
-                },
-              }}
-            />
-          ))}
+          {heatmap ? (
+            <HeatmapLayer reports={allReports} />
+          ) : (
+            <MarkerClusterGroup chunkedLoading maxClusterRadius={50}>
+              {allReports.map((report) => (
+                <Marker
+                  key={report.id}
+                  position={[report.latitude, report.longitude]}
+                  icon={getMarkerIcon(report.type)}
+                  eventHandlers={{
+                    click: () => {
+                      handleClose();
+                      setSelectedReport(report);
+                    },
+                  }}
+                />
+              ))}
+            </MarkerClusterGroup>
+          )}
 
-          {reportLocation && <Marker position={reportLocation} />}
+          <MarkerClusterGroup chunkedLoading maxClusterRadius={50}>
+            {allReports.map((report) => (
+              <Marker
+                key={report.id}
+                position={[report.latitude, report.longitude]}
+                icon={getMarkerIcon(report.type)}
+                eventHandlers={{
+                  click: () => {
+                    handleClose();
+                    setSelectedReport(report);
+                  },
+                }}
+              />
+            ))}
+          </MarkerClusterGroup>
+
+          {reportLocation && (
+            <Marker position={reportLocation} icon={getActiveMarkerIcon()} />
+          )}
         </MapContainer>
+        <button
+          onClick={() => setHeatmap((v) => !v)}
+          className={`absolute top-24 left-4 z-[1000] px-3 py-2 rounded-xl text-xs font-bold
+              uppercase tracking-widest shadow-md transition-all duration-200
+              ${
+                heatmap
+                  ? "bg-gray-900 text-white"
+                  : "bg-white text-gray-700 hover:bg-gray-50"
+              }`}
+        >
+          {heatmap ? "⬡ Heatmap" : "⬡ Heatmap"}
+        </button>
+        <MapLegend />
       </div>
 
       {selectedReport && (
         <ReportDetails
           report={selectedReport}
           onClose={() => setSelectedReport(null)}
+          onResolved={fetchReports}
         />
       )}
 
@@ -164,7 +224,10 @@ export default function Dashboard() {
 
             <div className="h-0.5 w-12 bg-yellow-400 rounded-full mb-5" />
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4 flex-1">
+            <form
+              onSubmit={handleSubmit}
+              className="flex flex-col gap-4 flex-1"
+            >
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">
                   Issue Title

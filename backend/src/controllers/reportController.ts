@@ -3,56 +3,24 @@ import asyncHandler from "express-async-handler";
 import { pool } from "../config/db.js";
 import { CreateReportBody } from "../types/report.js";
 
-export const solveReport = asyncHandler(async (req: Request, res: Response) => {
-  const reportId = req.params.id;
-  const userId = req.user!.id;
-
-  const existing = await pool.query(
-    "SELECT * FROM report_resolutions WHERE report_id = $1 AND user_id = $2",
-    [reportId, userId],
-  );
-
-  if (existing.rowCount && existing.rowCount > 0) {
-    res.status(400);
-    throw new Error("You have already marked this as resolved");
-  }
-
-  await pool.query(
-    "INSERT INTO report_resolutions (report_id, user_id) VALUES ($1, $2)",
-    [reportId, userId],
-  );
-
-  const voteCountResult = await pool.query(
-    "SELECT COUNT(*) FROM report_resolutions WHERE report_id = $1",
-    [reportId]
-  );
-
-  const count = parseInt(voteCountResult.rows[0].count);
-
-  if (count >= 5){
-    await pool.query(
-      "UPDATE reports SET resolved_at = NOW() WHERE id = $1",
-      [reportId]
-    );
-  }
-
-  res.status(200).json({
-    message: "Resolution vote recorded",
-    currentVotes: count,
-    isResolved: count >= 5
-  });
-  
-});
-
-
+/* Register, POST /api/reports */
 export const createReport = asyncHandler(
   async (req: Request, res: Response) => {
     const { title, description, type, latitude, longitude } =
       req.body as CreateReportBody;
 
+    const allowedTypes = ["pothole", "crack", "noise", "smell", "flooding"];
+
     if (!title || !type || latitude == null || longitude == null) {
       res.status(400);
       throw new Error("Missing required fields");
+    }
+
+    if (!allowedTypes.includes(type)) {
+      res.status(400);
+      throw new Error(
+        `Invalid type. Must be one of: ${allowedTypes.join(", ")}`,
+      );
     }
 
     const files = req.files as Express.Multer.File[];
@@ -88,6 +56,7 @@ export const createReport = asyncHandler(
   },
 );
 
+/* Get Reports, GET /api/reports */
 export const getReports = asyncHandler(async (_req: Request, res: Response) => {
   const result = await pool.query(
     `
@@ -112,4 +81,44 @@ export const getReports = asyncHandler(async (_req: Request, res: Response) => {
   );
 
   res.status(200).json(result.rows);
+});
+
+/* RESOLVE, POST /api/reports/:id/resolve */
+export const solveReport = asyncHandler(async (req: Request, res: Response) => {
+  const reportId = req.params.id;
+  const userId = req.user!.id;
+
+  const existing = await pool.query(
+    "SELECT * FROM report_resolutions WHERE report_id = $1 AND user_id = $2",
+    [reportId, userId],
+  );
+
+  if (existing.rowCount && existing.rowCount > 0) {
+    res.status(400);
+    throw new Error("You have already marked this as resolved");
+  }
+
+  await pool.query(
+    "INSERT INTO report_resolutions (report_id, user_id) VALUES ($1, $2)",
+    [reportId, userId],
+  );
+
+  const voteCountResult = await pool.query(
+    "SELECT COUNT(*) FROM report_resolutions WHERE report_id = $1",
+    [reportId],
+  );
+
+  const count = parseInt(voteCountResult.rows[0].count);
+
+  if (count >= 5) {
+    await pool.query("UPDATE reports SET resolved_at = NOW() WHERE id = $1", [
+      reportId,
+    ]);
+  }
+
+  res.status(200).json({
+    message: "Resolution vote recorded",
+    currentVotes: count,
+    isResolved: count >= 5,
+  });
 });

@@ -5,10 +5,7 @@ import { pool } from "../config/db.js";
 import { generateToken } from "../utils/generateToken.js";
 import { DbUser, PublicUser } from "../types/user.js";
 
-/*
- * REGISTER
- * POST /api/users
- */
+/* Register, POST /api/users */
 export const registerUser = asyncHandler(async (req: Request, res: Response) => {
   const { fullname, email, password } = req.body as {
     fullname: string;
@@ -56,10 +53,7 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
     .json(user);
 });
 
-/**
- * LOGIN
- * POST /api/users/login
- */
+/* Login, POST /api/users/login */
 export const loginUser = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body as {
     email: string;
@@ -104,10 +98,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
     });
 });
 
-/**
- * LOGOUT
- * POST /api/users/logout
- */
+/* Logout, POST /api/users/logout */
 export const logoutUser = asyncHandler(async (_req, res) => {
   res
     .cookie("token", "", {
@@ -117,10 +108,7 @@ export const logoutUser = asyncHandler(async (_req, res) => {
     .json({ message: "Logged out" });
 });
 
-/**
- * GET CURRENT USER
- * GET /api/users/me
- */
+/* Get current user, GET /api/users/me */
 export const getMe = asyncHandler(async (req: Request, res: Response) => {
   res.json(req.user);
 });
