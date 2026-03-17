@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useMap } from "react-leaflet";
+import L from "leaflet";
 
 interface NominatimResult {
   place_id: number;
@@ -18,6 +19,13 @@ export default function MapSearch() {
   const [open, setOpen] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (wrapperRef.current) {
+      L.DomEvent.disableClickPropagation(wrapperRef.current);
+      L.DomEvent.disableScrollPropagation(wrapperRef.current);
+    }
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -84,10 +92,10 @@ export default function MapSearch() {
   return (
     <div
       ref={wrapperRef}
-      className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] w-full max-w-sm px-4"
+      className="absolute top-3 left-14 right-3 md:left-1/2 md:right-auto md:-translate-x-1/2 z-[1000] max-w-sm"
     >
-      <div className="relative">
-        <div className="flex items-center bg-white rounded-2xl shadow-lg px-3 py-2.5 gap-2">
+      <div className="relative group">
+        <div className="flex items-center bg-white rounded-xl md:rounded-2xl shadow-lg border border-gray-100 px-3 py-2 md:py-2.5 gap-2 transition-all focus-within:ring-2 focus-within:ring-yellow-400/50">
           <svg
             className="w-4 h-4 text-gray-400 flex-shrink-0"
             fill="none"
@@ -102,8 +110,8 @@ export default function MapSearch() {
             value={query}
             onChange={handleChange}
             onFocus={() => results.length > 0 && setOpen(true)}
-            placeholder="Search in Colombo..."
-            className="flex-1 text-sm bg-transparent outline-none text-gray-800 placeholder:text-gray-400 font-mono"
+            placeholder="Search Colombo..."
+            className="flex-1 text-sm bg-transparent outline-none text-black placeholder:text-gray-300 font-mono"
           />
           {loading && (
             <div className="w-3.5 h-3.5 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin flex-shrink-0" />
@@ -111,36 +119,36 @@ export default function MapSearch() {
           {query && !loading && (
             <button
               onClick={() => { setQuery(""); setResults([]); setOpen(false); }}
-              className="text-gray-400 hover:text-gray-600 text-lg leading-none flex-shrink-0"
+              className="text-gray-400 hover:text-black text-xl leading-none flex-shrink-0"
             >
               &times;
             </button>
           )}
         </div>
 
-        {open && results.length > 0 && (
-          <div className="absolute top-full mt-2 w-full bg-white rounded-2xl shadow-xl overflow-hidden">
-            {results.map((result, i) => (
-              <button
-                key={result.place_id}
-                onClick={() => handleSelect(result)}
-                className={`w-full text-left px-4 py-3 text-sm font-mono hover:bg-yellow-50 transition-colors
-                  ${i !== results.length - 1 ? "border-b border-gray-100" : ""}`}
-              >
-                <p className="text-gray-800 font-semibold truncate">
-                  {result.display_name.split(",")[0]}
-                </p>
-                <p className="text-gray-400 text-xs truncate mt-0.5">
-                  {trimDisplayName(result.display_name)}
-                </p>
-              </button>
-            ))}
-          </div>
-        )}
-
-        {open && results.length === 0 && !loading && query.length >= 3 && (
-          <div className="absolute top-full mt-2 w-full bg-white rounded-2xl shadow-xl px-4 py-3">
-            <p className="text-sm text-gray-400 font-mono">No results found in Colombo.</p>
+        {open && (results.length > 0 || (query.length >= 3 && !loading)) && (
+          <div className="absolute top-full mt-2 w-full bg-white rounded-xl md:rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
+            {results.length > 0 ? (
+              results.map((result, i) => (
+                <button
+                  key={result.place_id}
+                  onClick={() => handleSelect(result)}
+                  className={`w-full text-left px-4 py-3 text-sm font-mono hover:bg-yellow-50 transition-colors
+                    ${i !== results.length - 1 ? "border-b border-gray-50" : ""}`}
+                >
+                  <p className="text-black font-bold truncate">
+                    {result.display_name.split(",")[0]}
+                  </p>
+                  <p className="text-gray-400 text-[10px] uppercase tracking-tighter truncate mt-0.5">
+                    {trimDisplayName(result.display_name)}
+                  </p>
+                </button>
+              ))
+            ) : (
+              <div className="px-4 py-3">
+                <p className="text-xs text-gray-400 font-mono italic uppercase">No matches found.</p>
+              </div>
+            )}
           </div>
         )}
       </div>

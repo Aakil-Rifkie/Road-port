@@ -12,7 +12,12 @@ type FormErrors = {
   confirm?: string;
 };
 
-export default function Login() {
+interface Props {
+  onLogin: (user: PublicUser) => void;
+}
+
+export default function Login({ onLogin }: Props) {
+
   const navigate = useNavigate();
   const [page, setPage] = useState<"login" | "register">("login");
 
@@ -63,6 +68,7 @@ export default function Login() {
         );
         const userData = response.data;
         localStorage.setItem("user", JSON.stringify(userData));
+        onLogin(userData);
         navigate(userData.role === "admin" ? "/admin" : "/dashboard");
       } catch (error: any) {
         setLoginErrors({ email: error.response?.data?.message || "Login failed." });

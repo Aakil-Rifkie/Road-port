@@ -5,7 +5,7 @@ import {upload} from "../middleware/fileUploadMiddleware.js"
 
 const router = express.Router();
 
-router.get("/", getReports);
+router.get("/", protect, getReports);
 
 router.post("/", protect, upload.array("images", 5), createReport)
 

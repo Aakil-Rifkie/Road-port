@@ -3,7 +3,6 @@ import type { CreateReportContent } from "../types/report";
 import API from "../api/axios";
 import { reportTypeColors } from "../utils/markerUtils";
 
-
 interface Props {
   report: CreateReportContent;
   onClose: () => void;
@@ -16,109 +15,96 @@ export default function ReportDetails({ report, onClose, onResolved }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-    useEffect(() => {
-    setError("");
-    setVotes(null);
-    setHasVoted(false);
-    setLoading(false);
+  useEffect(() => {
+    setError(""); setVotes(null); setHasVoted(false); setLoading(false);
   }, [report.id]);
 
-  const accentColor = reportTypeColors[report.type] ?? "#6B7280";
+  const accentColor = reportTypeColors[report.type] ?? "#000000";
 
   const handleResolve = async () => {
     setLoading(true);
-    setError("");
     try {
-      const { data } = await API.patch(
-        `/reports/${report.id}/resolve`,
-        {},
-        { withCredentials: true }
-      );
+      const { data } = await API.patch(`/reports/${report.id}/resolve`, {}, { withCredentials: true });
       setVotes(data.currentVotes);
       setHasVoted(true);
-      if (data.isResolved) {
-        onResolved();
-        onClose();
-      }
+      if (data.isResolved) { onResolved(); onClose(); }
     } catch (err: any) {
-      const msg = err.response?.data?.message ?? "Failed to submit vote.";
-      if (msg.toLowerCase().includes("already")) {
-        setHasVoted(true);
-        setError("You've already voted on this report.");
-      } else {
-        setError(msg);
-      }
-    } finally {
-      setLoading(false);
-    }
+      setHasVoted(true);
+      setError("Vote could not be processed.");
+    } finally { setLoading(false); }
   };
 
   return (
-    <div className="absolute right-0 top-0 h-full w-full md:w-[380px] bg-white shadow-2xl z-[1001] flex flex-col font-mono">
-
-      <div className="relative h-44 bg-gray-100 flex-shrink-0">
-        {report.images && report.images[0] ? (
-          <img
-            src={`http://localhost:3000/uploads/${report.images[0]}`}
-            className="w-full h-full object-cover"
-            alt="Report"
-          />
+    <div className="flex flex-col h-full bg-white font-mono">
+      <div className="relative w-full h-48 md:h-64 bg-gray-100 flex-shrink-0 overflow-hidden">
+        {report.images?.[0] ? (
+          <>
+            <img
+              src={`http://localhost:3000/uploads/${report.images[0]}`}
+              className="absolute inset-0 w-full h-full object-cover blur-xl opacity-30 scale-110"
+              alt="Background Blur"
+            />
+            <img
+              src={`http://localhost:3000/uploads/${report.images[0]}`}
+              className="relative w-full h-full object-contain"
+              alt="Report Detail"
+            />
+          </>
         ) : (
-          <div className="flex items-center justify-center h-full">
-            <span className="text-xs text-gray-400 uppercase tracking-widest">No Image</span>
+          <div className="flex items-center justify-center h-full text-[10px] font-bold text-gray-300 uppercase italic">
+            No image provided
           </div>
         )}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 bg-black/40 hover:bg-black/60 text-white w-8 h-8 rounded-full flex items-center justify-center transition-colors text-lg leading-none"
+          className="absolute top-4 right-4 z-10 bg-white/80 backdrop-blur text-black w-10 h-10 rounded-full shadow-xl flex items-center justify-center text-2xl hover:bg-white hover:scale-110 transition-all"
         >
-          &times;
+          ×
         </button>
       </div>
 
-      <div className="p-6 flex flex-col flex-1 overflow-y-auto">
-        <div className="flex items-center gap-2 mb-2">
-          <span
-            className="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg"
-            style={{ backgroundColor: `${accentColor}22`, color: accentColor }}
-          >
+      <div className="p-6 md:p-8 flex flex-col flex-1 min-h-0 overflow-hidden">
+        <div className="overflow-y-auto pr-2 flex-1 scrollbar-thin scrollbar-thumb-gray-200">
+          <div className="inline-block px-2 py-1 mb-4 text-[10px] font-black uppercase tracking-widest border-2" 
+               style={{ borderColor: accentColor, color: accentColor }}>
             {report.type}
-          </span>
+          </div>
+
+          <h2 className="text-2xl font-black italic uppercase leading-tight mb-4">{report.title}</h2>
+          <p className="text-sm text-gray-600 leading-relaxed mb-8">{report.description}</p>
+
+          <div className="space-y-2 border-t pt-6 border-gray-100">
+            <div className="flex justify-between text-[10px] font-bold uppercase">
+              <span className="text-gray-400">Reporter</span>
+              <span className="text-black">{report.reported_by}</span>
+            </div>
+            <div className="flex justify-between text-[10px] font-bold uppercase">
+              <span className="text-gray-400">Timestamp</span>
+              <span className="text-black">{new Date(report.created_at).toLocaleDateString("en-GB")}</span>
+            </div>
+          </div>
         </div>
 
-        <h2 className="text-xl font-black leading-tight text-gray-900">{report.title}</h2>
-
-        <div className="h-0.5 w-10 rounded-full my-3" style={{ backgroundColor: accentColor }} />
-
-        <p className="text-sm text-gray-500 leading-relaxed">{report.description}</p>
-
-        <div className="mt-4 pt-4 border-t border-gray-100 text-[11px] text-gray-400 space-y-1">
-          <p>Reported by <span className="text-gray-600 font-semibold">{report.reported_by}</span></p>
-          <p>{new Date(report.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</p>
-        </div>
-
-        <div className="mt-auto pt-6">
-          {error && (
-            <p className="text-xs text-red-400 mb-2 text-center">{error}</p>
-          )}
-
+        <div className="mt-6 pt-6 border-t border-gray-100 bg-white">
           {votes !== null && (
-            <p className="text-xs text-gray-400 text-center mb-2">
-              <span className="font-bold text-gray-700">{votes}</span> / 5 votes to resolve
-            </p>
+            <div className="mb-4 bg-gray-100 h-1.5 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-black transition-all duration-700 ease-out" 
+                style={{ width: `${(votes / 5) * 100}%` }}
+              />
+            </div>
           )}
-
+          
           <button
             onClick={handleResolve}
             disabled={hasVoted || loading}
-            className={`w-full py-3 rounded-xl text-sm font-bold tracking-wide transition-all duration-150
-              ${hasVoted
-                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                : "bg-yellow-400 hover:bg-yellow-500 active:scale-[0.98] text-black shadow-sm shadow-yellow-200"
-              }`}
+            className={`w-full py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all
+              ${hasVoted ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-yellow-400 hover:bg-black hover:text-white text-black shadow-lg shadow-yellow-100"}`}
           >
-            {loading ? "Submitting..." : hasVoted ? "✓ Vote Submitted" : "Mark as Resolved"}
+            {loading ? "Syncing..." : hasVoted ? "✓ Verified" : "Confirm Issue"}
           </button>
+          
+          {error && <p className="text-[10px] text-red-500 mt-3 text-center font-bold uppercase">{error}</p>}
         </div>
       </div>
     </div>
