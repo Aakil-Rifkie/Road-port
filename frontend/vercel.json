@@ -3,8 +3,10 @@
     {
       "source": "/api/:path*",
       "destination": "https://road-port-production.up.railway.app/api/:path*"
+    },
+    {
+      "source": "/((?!api).*)",
+      "destination": "/index.html"
     }
   ]
 }
-
-
