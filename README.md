@@ -1,44 +1,44 @@
-# RoadPort
+RoadPort
 
 A crowd-sourced road reporting platform that allows citizens of Colombo to report and track dangerous road conditions in real time. Users can pin hazards directly on an interactive map, view reports from others, and collectively vote to resolve issues once they've been fixed.
 
-🌐 **Live:** [road-port.vercel.app](https://road-port.vercel.app)
+🌐 Live: [road-port.vercel.app](https://road-port.vercel.app)
 
 ---
 
-## Screenshots
+Screenshots
 
-> Place screenshots in a `/screenshots` folder and uncomment the lines below
 
-<!-- ![Login](screenshots/login.png) -->
-<!-- ![Dashboard](screenshots/dashboard.png) -->
-<!-- ![New Report](screenshots/new-report.png) -->
-<!-- ![Report Details](screenshots/report-details.png) -->
-<!-- ![Admin Dashboard](screenshots/admin.png) -->
 
----
-
-## Features
-
-- **Authentication** — Register and log in with JWT-based auth stored in HTTP-only cookies
-- **Interactive Map** — Click anywhere on the Colombo map to pin and submit a road hazard report
-- **Report Types** — Categorise reports as pothole, crack, flooding, noise, or smell
-- **Colour-coded Markers** — Each report type has a distinct colour for quick visual identification
-- **Marker Clustering** — Nearby markers group together at low zoom and expand at street level
-- **Heatmap Toggle** — Switch between marker view and a density heatmap showing hazard hotspots
-- **Search** — Geocoded search restricted to Colombo using the Nominatim API
-- **Report Details** — Click any marker to view the full report including image, description, and reporter
-- **Resolve Voting** — Users vote to mark a report as resolved; 5 votes removes it from the map
-- **Spam Protection** — One vote per user per report enforced at the database level
-- **Image Upload** — Attach photo evidence to reports, stored on Cloudinary
-- **Admin Dashboard** — Admins can view all active reports, filter by type, search, and manually resolve
-- **Role-based Access** — Admin and user roles enforced on both API routes and frontend routing
-- **Colombo Bounds** — Map is restricted to Colombo; pan and zoom limits prevent leaving the city
-- **Responsive** — Works on mobile and desktop
+![Login](screenshots/login.png) 
+![Dashboard](screenshots/dashboard.png) 
+![New Report](screenshots/new-report.png) 
+![Report Details](screenshots/report-details.png)
+![Admin Dashboard](screenshots/admin.png) 
 
 ---
 
-## Tech Stack
+Features
+
+- Authentication** — Register and log in with JWT-based auth stored in HTTP-only cookies
+- Interactive Map** — Click anywhere on the Colombo map to pin and submit a road hazard report
+- Report Types** — Categorise reports as pothole, crack, flooding, noise, or smell
+- Colour-coded Markers** — Each report type has a distinct colour for quick visual identification
+- Marker Clustering** — Nearby markers group together at low zoom and expand at street level
+- Heatmap Toggle** — Switch between marker view and a density heatmap showing hazard hotspots
+- Search** — Geocoded search restricted to Colombo using the Nominatim API
+- Report Details** — Click any marker to view the full report including image, description, and reporter
+- Resolve Voting** — Users vote to mark a report as resolved; 5 votes removes it from the map
+- Spam Protection** — One vote per user per report enforced at the database level
+- Image Upload** — Attach photo evidence to reports, stored on Cloudinary
+- Admin Dashboard** — Admins can view all active reports, filter by type, search, and manually resolve
+- Role-based Access** — Admin and user roles enforced on both API routes and frontend routing
+- Colombo Bounds** — Map is restricted to Colombo; pan and zoom limits prevent leaving the city
+- Responsive** — Works on mobile and desktop
+
+---
+
+Tech Stack
 
 **Frontend**
 - React + TypeScript (Vite)
@@ -61,22 +61,23 @@ A crowd-sourced road reporting platform that allows citizens of Colombo to repor
 
 ---
 
-## Local Setup
+Local Setup
 
-### Prerequisites
+Prerequisites
 - Node.js 18+
 - PostgreSQL
 - Cloudinary account
 
 ### Backend
-
 ```bash
 cd backend
 npm install
 ```
 
+
 Create `backend/.env`:
-```env
+
+```
 PORT=3000
 DATABASE_URL=your_local_postgres_connection_string
 JWT_SECRET=your_jwt_secret
